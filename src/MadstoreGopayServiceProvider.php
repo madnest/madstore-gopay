@@ -21,7 +21,7 @@ class MadstoreGopayServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('madstore-gopay.php'),
+                __DIR__ . '/../config/madstore-gopay.php' => config_path('madstore-gopay.php'),
             ], 'config');
 
             // Publishing the views.
@@ -50,7 +50,7 @@ class MadstoreGopayServiceProvider extends ServiceProvider
     public function register()
     {
         // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'madstore-gopay');
+        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'madstore-gopay');
 
         // Register the main class to use with the facade
         $this->app->singleton('madstore-gopay', function () {

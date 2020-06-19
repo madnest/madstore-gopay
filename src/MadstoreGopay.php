@@ -134,7 +134,7 @@ class MadstoreGopay
                 'city' => $model->getCity(),
                 'street' => $model->getStreet(),
                 'postal_code' => $model->getZipCode(),
-                'country_code' => $model->country->getCountryIso3Code(),
+                'country_code' => $model->getCountryIso3Code(),
             ]
         ];
     }

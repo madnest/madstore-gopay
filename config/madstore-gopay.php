@@ -23,4 +23,11 @@ return [
         'en' => \GoPay\Definition\Language::ENGLISH,
         'de' => \GoPay\Definition\Language::GERMAN,
     ],
+
+    'vat' => [
+        '0' => \GoPay\Definition\Payment\VatRate::RATE_1,
+        '10' => \GoPay\Definition\Payment\VatRate::RATE_2,
+        '15' => \GoPay\Definition\Payment\VatRate::RATE_3,
+        '21' => \GoPay\Definition\Payment\VatRate::RATE_4,
+    ],
 ];

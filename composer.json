@@ -3,7 +3,10 @@
     "description": "Madstore GoPay",
     "keywords": [
         "madnest",
-        "madstore-gopay"
+        "madstore-gopay",
+        "laravel",
+        "ecommerce",
+        "payment-gateway"
     ],
     "homepage": "https://github.com/madnest/madstore-gopay",
     "license": "MIT",
@@ -17,7 +20,8 @@
     ],
     "require": {
         "php": "^7.1",
-        "illuminate/support": "^6.0"
+        "illuminate/support": "^6.0",
+        "madnest/laravel-gopay": "^1.0"
     },
     "require-dev": {
         "orchestra/testbench": "^4.0",
@@ -36,7 +40,6 @@
     "scripts": {
         "test": "vendor/bin/phpunit",
         "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
-
     },
     "config": {
         "sort-packages": true
@@ -49,6 +52,12 @@
             "aliases": {
                 "MadstoreGopay": "Madnest\\MadstoreGopay\\MadstoreGopayFacade"
             }
+        }
+    },
+    "repositories": {
+        "local": {
+            "type": "path",
+            "url": "../laravel-gopay"
         }
     }
 }

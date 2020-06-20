@@ -34,25 +34,25 @@ class MadstoreGopay
 
     protected function getParams(Purchasable $order, array $params = [], array $options = []): array
     {
-        return array_merge([
-            'payer' => $this->getPayerData($order->getPayerData()),
-            'amount' => $order->getFinalAmount(),
-            'currency' => $order->getCurrency()->getCode(),
-            'order_number' => $order->getVarSymbol(),
-            'order_description' => $order->getUUID(),
-            'items' => $this->getItems($order),
-            'eet' => $this->getEET($order),
-            'additional_params' => $params,
-            'lang' => config("madstore-gopay.{$order->getLanguage()}"),
-        ], $options);
-
-        // Options example
-        // $options = [
-        //     'callback' => [
-        //         'return_url' => 'https://www.eshop.cz/return',
-        //         'notification_url' => 'https://www.eshop.cz/notify'
-        //     ],
-        // ];
+        return array_merge(
+            [
+                'payer' => $this->getPayerData($order->getPayerData()),
+                'amount' => $order->getFinalAmount(),
+                'currency' => $order->getCurrency()->getCode(),
+                'order_number' => $order->getVarSymbol(),
+                'order_description' => $order->getUUID(),
+                'items' => $this->getItems($order),
+                'additional_params' => $params,
+                'lang' => config("madstore-gopay.{$order->getLanguage()}"),
+                'callback' => [
+                    'return_url' => config('madstore-gopay.return_url'),
+                    'notification_url' => config('madstore-gopay.notification_url'),
+                ],
+            ],
+            // If EET, then get EET data
+            config('madstore-gopay.eet') ? $this->getEET($order) : [],
+            $options,
+        );
     }
 
     /**

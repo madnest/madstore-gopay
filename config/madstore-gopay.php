@@ -3,6 +3,11 @@
 return [
     'default_payment_instrument' => \GoPay\Definition\Payment\PaymentInstrument::PAYMENT_CARD,
 
+    'eet' => false,
+
+    'return_url' => env('GOPAY_RETURN_URL'),
+    'notification_url' => env('GOPAY_NOTIFY_URL'),
+
     'allowed_payment_instruments' => [
         \GoPay\Definition\Payment\PaymentInstrument::PAYMENT_CARD,
         \GoPay\Definition\Payment\PaymentInstrument::BANK_ACCOUNT,

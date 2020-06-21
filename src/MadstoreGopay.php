@@ -6,11 +6,12 @@ use GoPay\Http\Response;
 use Madnest\LaravelGopay\LaravelGopay;
 use Madnest\MadstoreGopay\Contracts\HasOrderContactData;
 use Madnest\MadstoreGopay\Contracts\HasPayerData;
+use Madnest\MadstoreGopay\Contracts\PaymentGateway;
 use Madnest\MadstoreGopay\Contracts\Purchasable;
 use Madnest\MadstoreGopay\Contracts\PurchasableItem;
 use Madnest\MadstoreGopay\Contracts\ShippingItem;
 
-class MadstoreGopay
+class MadstoreGopay implements PaymentGateway
 {
     protected $gopay;
 

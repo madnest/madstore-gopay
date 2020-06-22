@@ -22,7 +22,7 @@
         "php": ">=7.2.0",
         "laravel/framework": "^7.0",
         "illuminate/support": "^6.18|^7.0",
-        "madnest/laravel-gopay": "dev-master",
+        "madnest/laravel-gopay": "^1.0",
         "madnest/madstore-framework": "dev-master"
     },
     "require-dev": {

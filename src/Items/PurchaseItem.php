@@ -12,7 +12,7 @@ class PurchaseItem extends Item
 
         $this->setAmount($amount);
 
-        $this->setQuantity($quantity);
+        $this->setCount($quantity);
 
         $this->setVATRate($vatRate);
     }
@@ -47,14 +47,14 @@ class PurchaseItem extends Item
         return $this->amount;
     }
 
-    public function setQuantity(int $quantity): void
+    public function setCount(int $quantity): void
     {
-        $this->quantity = $quantity;
+        $this->count = $quantity;
     }
 
-    public function getQuantity(): int
+    public function getCount(): int
     {
-        return $this->quantity;
+        return $this->count;
     }
 
     public function setVATRate(int $vatRate): void

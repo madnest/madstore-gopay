@@ -7,6 +7,7 @@ use Madnest\Madstore\Payment\Contracts\HasPayerInfo;
 use Madnest\Madstore\Payment\Contracts\PaymentOption;
 use Madnest\Madstore\Payment\Contracts\Purchasable;
 use Madnest\Madstore\Payment\Contracts\PurchasableItem;
+use Madnest\Madstore\Payment\Enums\PaymentStatus;
 use Madnest\Madstore\Payment\PaymentResponse;
 use Madnest\Madstore\Shipping\Contracts\ShippingItem;
 
@@ -52,7 +53,7 @@ class MadstoreGopay implements PaymentOption
 
     protected function errorResponse(\GoPay\Http\Response $response)
     {
-        return (new PaymentResponse($response->statusCode, 'ERROR'))
+        return (new PaymentResponse($response->statusCode, PaymentStatus::ERROR))
             ->setErrors($response->json['errors']);
     }
 

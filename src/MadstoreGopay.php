@@ -32,13 +32,13 @@ class MadstoreGopay implements PaymentOption
         $response = $this->gopay->createPayment($this->getParams($purchasable, $params, $options));
 
         if ($response->hasSucceed()) {
-            return $this->successfullResponse($response);
+            return $this->successResponse($response);
         }
 
         return $this->errorResponse($response);
     }
 
-    protected function successfullResponse(\GoPay\Http\Response $response)
+    protected function successResponse(\GoPay\Http\Response $response)
     {
         return (new PaymentResponse($response->statusCode, $response->json['state']))
             ->setOrderNumber($response->json['order_number'])

@@ -52,7 +52,7 @@ class MadstoreGopay implements PaymentOption
 
     protected function errorResponse(\GoPay\Http\Response $response)
     {
-        return (new PaymentResponse($response->statusCode, $response->json['state']))
+        return (new PaymentResponse($response->statusCode, 'ERROR'))
             ->setErrors($response->json['errors']);
     }
 

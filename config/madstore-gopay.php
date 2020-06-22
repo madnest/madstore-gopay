@@ -5,6 +5,8 @@ return [
 
     'eet' => false,
 
+    'inline' => false,
+
     'return_url' => env('GOPAY_RETURN_URL'),
     'notification_url' => env('GOPAY_NOTIFY_URL'),
 

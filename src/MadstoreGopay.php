@@ -4,14 +4,13 @@ namespace Madnest\MadstoreGopay;
 
 use GoPay\Http\Response;
 use Madnest\LaravelGopay\LaravelGopay;
-use Madnest\MadstoreGopay\Contracts\HasOrderContactData;
-use Madnest\MadstoreGopay\Contracts\HasPayerData;
-use Madnest\MadstoreGopay\Contracts\PaymentGateway;
-use Madnest\MadstoreGopay\Contracts\Purchasable;
-use Madnest\MadstoreGopay\Contracts\PurchasableItem;
-use Madnest\MadstoreGopay\Contracts\ShippingItem;
+use Madnest\Madstore\Payment\Contracts\HasPayerInfo;
+use Madnest\Madstore\Payment\Contracts\PaymentOption;
+use Madnest\Madstore\Payment\Contracts\Purchasable;
+use Madnest\Madstore\Payment\Contracts\PurchasableItem;
+use Madnest\Madstore\Shipping\Contracts\ShippingItem;
 
-class MadstoreGopay implements PaymentGateway
+class MadstoreGopay implements PaymentOption
 {
     protected $gopay;
 
@@ -33,25 +32,25 @@ class MadstoreGopay implements PaymentGateway
         return $this->gopay->createPayment($this->getParams($purchasable, $params, $options));
     }
 
-    protected function getParams(Purchasable $order, array $params = [], array $options = []): array
+    protected function getParams(Purchasable $model, array $params = [], array $options = []): array
     {
         return array_merge(
             [
-                'payer' => $this->getPayerData($order->getPayerData()),
-                'amount' => $order->getFinalAmount(),
-                'currency' => $order->getCurrency()->getCode(),
-                'order_number' => $order->getVarSymbol(),
-                'order_description' => $order->getUUID(),
-                'items' => $this->getItems($order),
+                'payer' => $this->getPayerData($model->getPayerData()),
+                'amount' => $model->getFinalAmount(),
+                'currency' => $model->getCurrency()->getCode(),
+                'order_number' => $model->getVarSymbol(),
+                'order_description' => $model->getUUID(),
+                'items' => $this->getItems($model),
                 'additional_params' => $params,
-                'lang' => config("madstore-gopay.{$order->getLanguage()}"),
+                'lang' => config("madstore-gopay.{$model->getLanguage()}"),
                 'callback' => [
                     'return_url' => config('madstore-gopay.return_url'),
                     'notification_url' => config('madstore-gopay.notification_url'),
                 ],
             ],
             // If EET, then get EET data
-            config('madstore-gopay.eet') ? $this->getEET($order) : [],
+            config('madstore-gopay.eet') ? $this->getEET($model) : [],
             $options,
         );
     }
@@ -117,10 +116,10 @@ class MadstoreGopay implements PaymentGateway
     /**
      * Get payer info
      *
-     * @param HasOrderContactData $order
+     * @param HasPayerInfo $model
      * @return array
      */
-    protected function getPayerData(HasPayerData $model): array
+    protected function getPayerData(HasPayerInfo $model): array
     {
         return [
             // 'default_payment_instrument' => config('madstore-gopay.default_payment_instrument'),

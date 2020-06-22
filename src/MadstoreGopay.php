@@ -40,22 +40,20 @@ class MadstoreGopay implements PaymentOption
 
     protected function successfullResponse(\GoPay\Http\Response $response)
     {
-        return new PaymentResponse(
-            $response->statusCode,
-            $response->json['state'],
-            $response->json['order_number'],
-            $response->json['amount'],
-            $response->json['currency'],
-            $response->json['payer'],
-            $response->json['gw_url'],
-            $response->json['gw_url'] ? true : false,
-            $response->json['errors'] ?? []
-        );
+        return (new PaymentResponse($response->statusCode, $response->json['state']))
+            ->setOrderNumber($response->json['order_number'])
+            ->setAmount($response->json['amount'])
+            ->setCurrency($response->json['currency'])
+            ->setPayer($response->json['payer'])
+            ->setRedirectUrl($response->json['gw_url'])
+            ->setRedirect($response->json['gw_url'] ? true : false)
+            ->setErrors([]);
     }
 
     protected function errorResponse(\GoPay\Http\Response $response)
     {
-        return new PaymentResponse($response->statusCode, 'ERROR', '', 0, '', [], '', false, $response->json['errors']);
+        return (new PaymentResponse($response->statusCode, $response->json['state']))
+            ->setErrors($response->json['errors']);
     }
 
     protected function getParams(Purchasable $model, array $params = [], array $options = []): array

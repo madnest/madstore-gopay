@@ -2,12 +2,12 @@
 
 namespace Madnest\MadstoreGopay;
 
-use GoPay\Http\Response;
 use Madnest\LaravelGopay\LaravelGopay;
 use Madnest\Madstore\Payment\Contracts\HasPayerInfo;
 use Madnest\Madstore\Payment\Contracts\PaymentOption;
 use Madnest\Madstore\Payment\Contracts\Purchasable;
 use Madnest\Madstore\Payment\Contracts\PurchasableItem;
+use Madnest\Madstore\Payment\PaymentResponse;
 use Madnest\Madstore\Shipping\Contracts\ShippingItem;
 
 class MadstoreGopay implements PaymentOption
@@ -25,15 +25,22 @@ class MadstoreGopay implements PaymentOption
      * @param Purchasable $purchasable
      * @param <array|array> $params Additional params
      * @param <array|array> $options Additional options
-     * @return \GoPay\Http\Response
+     * @return PaymentResponse
      */
-    public function createPayment(Purchasable $purchasable, array $params = [], array $options = []): array
+    public function createPayment(Purchasable $purchasable, array $params = [], array $options = []): PaymentResponse
     {
         $response = $this->gopay->createPayment($this->getParams($purchasable, $params, $options));
 
-        return [
-            $response
-        ];
+        return new PaymentResponse(
+            $response->statusCode,
+            $response->json['state'],
+            $response->json['order_number'],
+            $response->json['amount'],
+            $response->json['currency'],
+            $response->json['payer'],
+            $response->json['gw_url'],
+            $response->json['gw_url'] ? true : false
+        );
     }
 
     protected function getParams(Purchasable $model, array $params = [], array $options = []): array

@@ -120,7 +120,7 @@ class MadstoreGopay implements PaymentOption
      * Get PurchaseItem
      *
      * @param PurchasableItem $item
-     * @return PurchaseItem
+     * @return array
      */
     protected function getPurchaseItem(PurchasableItem $item): array
     {
@@ -131,9 +131,9 @@ class MadstoreGopay implements PaymentOption
             $item->getVATRate()
         );
 
-        $additional = ['url', 'ean'];
+        $additionalKeys = ['url', 'ean'];
 
-        foreach ($additional as $key) {
+        foreach ($additionalKeys as $key) {
             $key = Str::camel($key);
             $getMethod = 'get' . $key;
             if (method_exists($item, $getMethod)) {
@@ -150,7 +150,7 @@ class MadstoreGopay implements PaymentOption
      * Get ShippingItem
      *
      * @param ShippingItem $shipping
-     * @return ShippingItem
+     * @return array
      */
     protected function getShippingItem(ShippableItem $shipping): array
     {

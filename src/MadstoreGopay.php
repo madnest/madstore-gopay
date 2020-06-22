@@ -104,7 +104,7 @@ class MadstoreGopay implements PaymentOption
 
         return array_merge(
             $model->getItems()->map(fn ($item) => $this->mapItem($item))->toArray(),
-            $this->mapShippingItem($model->getShippingOption()),
+            $this->mapShippingItem($model->getShippableItem()),
         );
     }
 

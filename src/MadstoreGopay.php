@@ -93,18 +93,18 @@ class MadstoreGopay implements PaymentOption
      * possible to also add discount items
      * and delivery item
      *
-     * @param Purchasable $order
+     * @param Purchasable $model
      * @return array
      */
-    protected function mapItems(Purchasable $order): array
+    protected function mapItems(Purchasable $model): array
     {
-        if ($order->getItems()->isEmpty()) {
+        if ($model->getItems()->isEmpty()) {
             throw new \InvalidArgumentException('There are no items to be purchased');
         }
 
         return array_merge(
-            $order->getItems()->map(fn ($item) => $this->mapItem($item))->toArray(),
-            // $this->mapShippingItem($order->getShipping()),
+            $model->getItems()->map(fn ($item) => $this->mapItem($item))->toArray(),
+            $this->mapShippingItem($model->getShippingOption()),
         );
     }
 
@@ -140,10 +140,7 @@ class MadstoreGopay implements PaymentOption
             'name' => $shipping->getTitle(),
             'amount' => $shipping->getAmount(),
             'count' => 1,
-            'vat_rate' => config(
-                'madstore-gopay.vat.0',
-                \GoPay\Definition\Payment\VatRate::RATE_1
-            ),
+            'vat_rate' => 21,
         ];
     }
 

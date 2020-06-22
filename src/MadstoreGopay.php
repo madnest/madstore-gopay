@@ -2,7 +2,6 @@
 
 namespace Madnest\MadstoreGopay;
 
-use InvalidArgumentException;
 use Madnest\LaravelGopay\LaravelGopay;
 use Madnest\Madstore\Payment\Contracts\HasPayerInfo;
 use Madnest\Madstore\Payment\Contracts\PaymentOption;

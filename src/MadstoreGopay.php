@@ -31,6 +31,15 @@ class MadstoreGopay implements PaymentOption
     {
         $response = $this->gopay->createPayment($this->getParams($purchasable, $params, $options));
 
+        if ($response->hasSucceed()) {
+            return $this->successfullResponse($response);
+        }
+
+        return $this->errorResponse($response);
+    }
+
+    protected function successfullResponse(\GoPay\Http\Response $response)
+    {
         return new PaymentResponse(
             $response->statusCode,
             $response->json['state'],
@@ -39,8 +48,14 @@ class MadstoreGopay implements PaymentOption
             $response->json['currency'],
             $response->json['payer'],
             $response->json['gw_url'],
-            $response->json['gw_url'] ? true : false
+            $response->json['gw_url'] ? true : false,
+            $response->json['errors'] ?? []
         );
+    }
+
+    protected function errorResponse(\GoPay\Http\Response $response)
+    {
+        return new PaymentResponse($response->statusCode, 'ERROR', '', 0, '', [], '', false, $response->json['errors']);
     }
 
     protected function getParams(Purchasable $model, array $params = [], array $options = []): array

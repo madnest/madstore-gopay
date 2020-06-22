@@ -2,6 +2,7 @@
 
 namespace Madnest\MadstoreGopay;
 
+use InvalidArgumentException;
 use Madnest\LaravelGopay\LaravelGopay;
 use Madnest\Madstore\Payment\Contracts\HasPayerInfo;
 use Madnest\Madstore\Payment\Contracts\PaymentOption;
@@ -30,7 +31,8 @@ class MadstoreGopay implements PaymentOption
      */
     public function createPayment(Purchasable $purchasable, array $params = [], array $options = []): PaymentResponse
     {
-        $response = $this->gopay->createPayment($this->getParams($purchasable, $params, $options));
+        // dd($this->mapParams($purchasable, $params, $options));
+        $response = $this->gopay->createPayment($this->mapParams($purchasable, $params, $options));
 
         if ($response->hasSucceed()) {
             return $this->successResponse($response);
@@ -41,23 +43,30 @@ class MadstoreGopay implements PaymentOption
 
     protected function successResponse(\GoPay\Http\Response $response)
     {
-        return (new PaymentResponse($response->statusCode, $response->json['state']))
+        return $this
+            ->newPaymentResponse($response->statusCode, $response->json['state'])
             ->setOrderNumber($response->json['order_number'])
             ->setAmount($response->json['amount'])
             ->setCurrency($response->json['currency'])
             ->setPayer($response->json['payer'])
             ->setRedirectUrl($response->json['gw_url'])
-            ->setRedirect($response->json['gw_url'] ? true : false)
+            ->setRedirect($this->shouldRedirect())
             ->setErrors([]);
     }
 
     protected function errorResponse(\GoPay\Http\Response $response)
     {
-        return (new PaymentResponse($response->statusCode, PaymentStatus::ERROR))
+        return $this
+            ->newPaymentResponse($response->statusCode, PaymentStatus::ERROR)
             ->setErrors($response->json['errors']);
     }
 
-    protected function getParams(Purchasable $model, array $params = [], array $options = []): array
+    protected function newPaymentResponse(int $statusCode, string $paymentStatus): PaymentResponse
+    {
+        return new PaymentResponse($statusCode, $paymentStatus);
+    }
+
+    protected function mapParams(Purchasable $model, array $params = [], array $options = []): array
     {
         return array_merge(
             [
@@ -66,7 +75,7 @@ class MadstoreGopay implements PaymentOption
                 'currency' => $model->getCurrency(),
                 'order_number' => $model->getVarSymbol(),
                 'order_description' => $model->getUUID(),
-                'items' => $this->getItems($model),
+                'items' => $this->mapItems($model),
                 'additional_params' => $params,
                 'lang' => config("madstore-gopay.{$model->getLanguage()}"),
                 'callback' => [
@@ -88,21 +97,25 @@ class MadstoreGopay implements PaymentOption
      * @param Purchasable $order
      * @return array
      */
-    protected function getItems(Purchasable $order): array
+    protected function mapItems(Purchasable $order): array
     {
+        if ($order->getItems()->isEmpty()) {
+            throw new \InvalidArgumentException('There are no items to be purchased');
+        }
+
         return array_merge(
-            $order->getItems()->map(fn ($item) => $this->getItem($item))->toArray(),
-            // $this->getDeliveryItem($order->getShipping()),
+            $order->getItems()->map(fn ($item) => $this->mapItem($item))->toArray(),
+            // $this->mapShippingItem($order->getShipping()),
         );
     }
 
     /**
-     * Data mapping of one item
+     * Map PurchasableItem
      *
      * @param PurchasableItem $item
      * @return array
      */
-    protected function getItem(PurchasableItem $item): array
+    protected function mapItem(PurchasableItem $item): array
     {
         return [
             'type' => \GoPay\Definition\Payment\PaymentItemType::ITEM,
@@ -111,20 +124,17 @@ class MadstoreGopay implements PaymentOption
             'ean' => $item->getEan(),
             'amount' => $item->getAmount(),
             'count' => $item->getQuantity(),
-            'vat_rate' => config(
-                'madstore-gopay.vat.21',
-                \GoPay\Definition\Payment\VatRate::RATE_4
-            ),
+            'vat_rate' => $item->getVATRate(),
         ];
     }
 
     /**
-     * Get delivery / shipping item
+     * Map ShippingItem
      *
      * @param ShippingItem $shipping
      * @return array
      */
-    protected function getDeliveryItem(ShippingItem $shipping): array
+    protected function mapShippingItem(ShippingItem $shipping): array
     {
         return [
             'type' => \GoPay\Definition\Payment\PaymentItemType::DELIVERY,
@@ -139,7 +149,7 @@ class MadstoreGopay implements PaymentOption
     }
 
     /**
-     * Get payer info
+     * Map payer info
      *
      * @param HasPayerInfo $model
      * @return array
@@ -165,11 +175,11 @@ class MadstoreGopay implements PaymentOption
     }
 
     /**
-     * Get data for EET
+     * Map data for EET
      *
      * @return array
      */
-    protected function getEET(): array
+    protected function mapEET(): array
     {
         return [
             // 'eet' => [
@@ -181,5 +191,15 @@ class MadstoreGopay implements PaymentOption
             //     'mena' => Currency::CZECH_CROWNS
             // ],
         ];
+    }
+
+    /**
+     * Determine wether GoPay should redirect
+     *
+     * @return boolean
+     */
+    protected function shouldRedirect(): bool
+    {
+        return config('madstore-gopay.inline') ? false : true;
     }
 }

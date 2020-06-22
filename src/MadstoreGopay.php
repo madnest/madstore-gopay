@@ -27,18 +27,22 @@ class MadstoreGopay implements PaymentOption
      * @param <array|array> $options Additional options
      * @return \GoPay\Http\Response
      */
-    public function createPayment(Purchasable $purchasable, array $params = [], array $options = []): Response
+    public function createPayment(Purchasable $purchasable, array $params = [], array $options = []): array
     {
-        return $this->gopay->createPayment($this->getParams($purchasable, $params, $options));
+        $response = $this->gopay->createPayment($this->getParams($purchasable, $params, $options));
+
+        return [
+            $response
+        ];
     }
 
     protected function getParams(Purchasable $model, array $params = [], array $options = []): array
     {
         return array_merge(
             [
-                'payer' => $this->getPayerData($model->getPayerData()),
+                'payer' => $this->mapPayerInfo($model->getPayerInfo()),
                 'amount' => $model->getFinalAmount(),
-                'currency' => $model->getCurrency()->getCode(),
+                'currency' => $model->getCurrency(),
                 'order_number' => $model->getVarSymbol(),
                 'order_description' => $model->getUUID(),
                 'items' => $this->getItems($model),
@@ -119,7 +123,7 @@ class MadstoreGopay implements PaymentOption
      * @param HasPayerInfo $model
      * @return array
      */
-    protected function getPayerData(HasPayerInfo $model): array
+    protected function mapPayerInfo(HasPayerInfo $model): array
     {
         return [
             // 'default_payment_instrument' => config('madstore-gopay.default_payment_instrument'),

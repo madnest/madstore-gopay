@@ -2,6 +2,7 @@
 
 namespace Madnest\MadstoreGopay;
 
+use Illuminate\Support\Str;
 use Madnest\LaravelGopay\LaravelGopay;
 use Madnest\Madstore\Payment\Contracts\HasPayerInfo;
 use Madnest\Madstore\Payment\Contracts\PaymentOption;
@@ -9,7 +10,9 @@ use Madnest\Madstore\Payment\Contracts\Purchasable;
 use Madnest\Madstore\Payment\Contracts\PurchasableItem;
 use Madnest\Madstore\Payment\Enums\PaymentStatus;
 use Madnest\Madstore\Payment\PaymentResponse;
-use Madnest\Madstore\Shipping\Contracts\ShippingItem;
+use Madnest\Madstore\Shipping\Contracts\ShippableItem;
+use Madnest\MadstoreGopay\Items\PurchaseItem;
+use Madnest\MadstoreGopay\Items\ShippingItem;
 
 class MadstoreGopay implements PaymentOption
 {
@@ -30,7 +33,7 @@ class MadstoreGopay implements PaymentOption
      */
     public function createPayment(Purchasable $purchasable, array $params = [], array $options = []): PaymentResponse
     {
-        // dd($this->mapParams($purchasable, $params, $options));
+        dd($this->mapParams($purchasable, $params, $options));
         $response = $this->gopay->createPayment($this->mapParams($purchasable, $params, $options));
 
         if ($response->hasSucceed()) {
@@ -99,49 +102,56 @@ class MadstoreGopay implements PaymentOption
     protected function mapItems(Purchasable $model): array
     {
         if ($model->getItems()->isEmpty()) {
-            throw new \InvalidArgumentException('There are no items to be purchased');
+            throw new \InvalidArgumentException('There are no items to be purchased.');
         }
 
-        return array_merge(
-            $model->getItems()->map(fn ($item) => $this->mapItem($item))->toArray(),
-            $this->mapShippingItem($model->getShippableItem()),
-        );
+        $purchaseItems = $model->getItems()->map(fn ($item) => $this->getPurchaseItem($item))->toArray();
+        $shippingItem = $this->getShippingItem($model->getShippableItem());
+
+        return array_merge($purchaseItems, [$shippingItem]);
     }
 
     /**
-     * Map PurchasableItem
+     * Get PurchaseItem
      *
      * @param PurchasableItem $item
-     * @return array
+     * @return PurchaseItem
      */
-    protected function mapItem(PurchasableItem $item): array
+    protected function getPurchaseItem(PurchasableItem $item): array
     {
-        return [
-            'type' => \GoPay\Definition\Payment\PaymentItemType::ITEM,
-            'name' => $item->getTitle(),
-            'product_url' => $item->getUrl(),
-            'ean' => $item->getEan(),
-            'amount' => $item->getAmount(),
-            'count' => $item->getQuantity(),
-            'vat_rate' => $item->getVATRate(),
-        ];
+        $purchaseItem = new PurchaseItem(
+            $item->getTitle(),
+            $item->getAmount(),
+            $item->getQuantity(),
+            $item->getVATRate()
+        );
+
+        $additional = ['url', 'ean'];
+
+        foreach ($additional as $key) {
+            $key = Str::camel($key);
+            $getMethod = 'get' . $key;
+            if (method_exists($item, $getMethod)) {
+                $setMethod = 'set' . $key;
+
+                $purchaseItem->$setMethod($item->$getMethod());
+            }
+        }
+
+        return $purchaseItem->toArray();
     }
 
     /**
-     * Map ShippingItem
+     * Get ShippingItem
      *
      * @param ShippingItem $shipping
-     * @return array
+     * @return ShippingItem
      */
-    protected function mapShippingItem(ShippingItem $shipping): array
+    protected function getShippingItem(ShippableItem $shipping): array
     {
-        return [
-            'type' => \GoPay\Definition\Payment\PaymentItemType::DELIVERY,
-            'name' => $shipping->getTitle(),
-            'amount' => $shipping->getAmount(),
-            'count' => 1,
-            'vat_rate' => 21,
-        ];
+        $shippingItem = new ShippingItem($shipping->getTitle(), $shipping->getAmount());
+
+        return $shippingItem->toArray();
     }
 
     /**

@@ -59,11 +59,11 @@ class ShippingItem extends Item
 
     public function setVATRate(int $vatRate): void
     {
-        $this->vatRate = $vatRate;
+        $this->vat_rate = $vatRate;
     }
 
     public function getVATRate(): int
     {
-        return $this->vatRate;
+        return $this->vat_rate;
     }
 }

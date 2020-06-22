@@ -33,7 +33,7 @@ class MadstoreGopay implements PaymentOption
      */
     public function createPayment(Purchasable $purchasable, array $params = [], array $options = []): PaymentResponse
     {
-        dd($this->mapParams($purchasable, $params, $options));
+        // dd($this->mapParams($purchasable, $params, $options));
         $response = $this->gopay->createPayment($this->mapParams($purchasable, $params, $options));
 
         if ($response->hasSucceed()) {
@@ -58,9 +58,17 @@ class MadstoreGopay implements PaymentOption
 
     protected function errorResponse(\GoPay\Http\Response $response)
     {
+        if (isset($response->json['errors'])) {
+            return $this
+                ->newPaymentResponse($response->statusCode, PaymentStatus::ERROR)
+                ->setErrors($response->json['errors']);
+        }
+
         return $this
             ->newPaymentResponse($response->statusCode, PaymentStatus::ERROR)
-            ->setErrors($response->json['errors']);
+            ->setErrors([
+                'message' => (string) $response
+            ]);
     }
 
     protected function newPaymentResponse(int $statusCode, string $paymentStatus): PaymentResponse
@@ -70,25 +78,22 @@ class MadstoreGopay implements PaymentOption
 
     protected function mapParams(Purchasable $model, array $params = [], array $options = []): array
     {
-        return array_merge(
-            [
-                'payer' => $this->mapPayerInfo($model->getPayerInfo()),
-                'amount' => $model->getFinalAmount(),
-                'currency' => $model->getCurrency(),
-                'order_number' => $model->getVarSymbol(),
-                'order_description' => $model->getUUID(),
-                'items' => $this->mapItems($model),
-                'additional_params' => $params,
-                'lang' => config("madstore-gopay.{$model->getLanguage()}"),
-                'callback' => [
-                    'return_url' => config('madstore-gopay.return_url'),
-                    'notification_url' => config('madstore-gopay.notification_url'),
-                ],
+        $params = [
+            'payer' => $this->mapPayerInfo($model->getPayerInfo()),
+            'amount' => $model->getFinalAmount(),
+            'currency' => $model->getCurrency(),
+            'order_number' => $model->getVarSymbol(),
+            'order_description' => $model->getUUID(),
+            'items' => $this->mapItems($model),
+            'additional_params' => $params,
+            'lang' => config("madstore-gopay.{$model->getLanguage()}"),
+            'callback' => [
+                'return_url' => config('madstore-gopay.return_url'),
+                'notification_url' => config('madstore-gopay.notification_url'),
             ],
-            // If EET, then get EET data
-            config('madstore-gopay.eet') ? $this->getEET($model) : [],
-            $options,
-        );
+        ];
+
+        return array_merge($params, config('madstore-gopay.eet') ? $this->getEET($model) : [], $options);
     }
 
     /**

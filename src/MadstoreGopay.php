@@ -106,6 +106,10 @@ class MadstoreGopay implements PaymentOption
      */
     protected function mapItems(Purchasable $model): array
     {
+        if ($model->getItems()->isEmpty()) {
+            throw new \InvalidArgumentException('There are no items to be purchased.');
+        }
+
         $purchaseItems = $model->getItems()->map(fn ($item) => $this->getPurchaseItem($item))->toArray();
         $shippingItem = $this->getShippingItem($model->getShippableItem());
 

@@ -43,6 +43,17 @@ class MadstoreGopay implements PaymentOption
         return $this->errorResponse($response);
     }
 
+    public function getStatus($id): PaymentResponse
+    {
+        $response = $this->gopay->getStatus($id);
+
+        if ($response->hasSucceed()) {
+            return $this->statusResponse($response);
+        }
+
+        return $this->errorResponse($response);
+    }
+
     protected function successResponse(\GoPay\Http\Response $response)
     {
         return $this
@@ -69,6 +80,11 @@ class MadstoreGopay implements PaymentOption
             ->setErrors([
                 'message' => (string) $response
             ]);
+    }
+
+    protected function statusResponse(\GoPay\Http\Response $response)
+    {
+        return $this->newPaymentResponse($response->statusCode, $response->json['state']);
     }
 
     protected function newPaymentResponse(int $statusCode, string $paymentStatus): PaymentResponse

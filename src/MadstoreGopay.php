@@ -86,6 +86,7 @@ class MadstoreGopay implements PaymentOption
     {
         return $this
             ->newPaymentResponse($response->statusCode, $response->json['state'])
+            ->setOrderNumber($response->json['order_number'])
             ->setRedirectUrl($response->json['gw_url']);
     }
 

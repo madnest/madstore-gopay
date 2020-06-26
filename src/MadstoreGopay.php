@@ -116,7 +116,7 @@ class MadstoreGopay implements PaymentOption
             ],
         ];
 
-        return array_merge($params, config('madstore-gopay.eet') ? $this->getEET($model) : [], $options);
+        return array_merge($params, config('madstore-gopay.eet') ? $this->mapEET($model) : [], $options);
     }
 
     /**

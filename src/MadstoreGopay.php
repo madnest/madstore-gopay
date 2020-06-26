@@ -63,6 +63,7 @@ class MadstoreGopay implements PaymentOption
             ->setCurrency($response->json['currency'])
             ->setPayer($response->json['payer'])
             ->setRedirectUrl($response->json['gw_url'])
+            ->setGateway('gopay')
             ->setRedirect($this->shouldRedirect())
             ->setErrors([]);
     }

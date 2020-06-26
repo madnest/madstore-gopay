@@ -105,7 +105,7 @@ class MadstoreGopay implements PaymentOption
             'amount' => $model->getFinalAmount(),
             'currency' => $model->getCurrency(),
             'order_number' => $model->getUUID(),
-            'order_description' => $model->getVarSymbol(),
+            // 'order_description' => $model->getVarSymbol(),
             'items' => $this->mapItems($model),
             'additional_params' => $params,
             'lang' => config("madstore-gopay.{$model->getLanguage()}"),

@@ -59,13 +59,13 @@ class MadstoreGopay implements PaymentOption
         return $this
             ->newPaymentResponse($response->statusCode, $response->json['state'])
             ->setOrderNumber($response->json['order_number'])
-            ->setPaymentMethod($response->json['payment_instrument'] ?? '')
             ->setAmount($response->json['amount'])
             ->setCurrency($response->json['currency'])
             ->setPayer($response->json['payer'])
-            ->setRedirectUrl($response->json['gw_url'])
+            ->setPaymentMethod($response->json['payment_instrument'] ?? '')
             ->setGateway('gopay')
             ->setRedirect($this->shouldRedirect())
+            ->setRedirectUrl($response->json['gw_url'])
             ->setErrors([]);
     }
 
@@ -92,6 +92,7 @@ class MadstoreGopay implements PaymentOption
             ->setAmount($response->json['amount'])
             ->setCurrency($response->json['currency'])
             ->setPaymentMethod($response->json['payment_instrument'] ?? '')
+            ->setGateway('gopay')
             ->setRedirectUrl($response->json['gw_url']);
     }
 

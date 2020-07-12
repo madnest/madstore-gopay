@@ -43,7 +43,13 @@ class MadstoreGopay implements PaymentOption
         return $this->errorResponse($response);
     }
 
-    public function getStatus($id): PaymentResponse
+    /**
+     * Get payment status
+     *
+     * @param int $id
+     * @return PaymentResponse
+     */
+    public function getStatus(int $id): PaymentResponse
     {
         $response = $this->gopay->getStatus($id);
 
@@ -54,51 +60,75 @@ class MadstoreGopay implements PaymentOption
         return $this->errorResponse($response);
     }
 
+    /**
+     * Return successful response
+     *
+     * @param \GoPay\Http\Response $response
+     * @return void
+     */
     protected function successResponse(\GoPay\Http\Response $response)
     {
-        return $this
-            ->newPaymentResponse($response->statusCode, $response->json['state'])
-            ->setOrderNumber($response->json['order_number'])
-            ->setAmount($response->json['amount'])
-            ->setCurrency($response->json['currency'])
-            ->setPayer($response->json['payer'])
-            ->setPaymentMethod($response->json['payment_instrument'] ?? '')
-            ->setGateway('gopay')
-            ->setRedirect($this->shouldRedirect())
-            ->setRedirectUrl($response->json['gw_url'])
-            ->setErrors([]);
+        return new PaymentResponse([
+            'statusCode' => $response->statusCode,
+            'status' => $response->json['state'],
+            'orderNumber' => $response->json['order_number'],
+            'amount' => $response->json['amount'],
+            'currency' => $response->json['currency'],
+            'payerInfo' => $response->json['payer'],
+            'paymentMethod' => $response->json['payment_instrument'] ?? '',
+            'gateway' => 'gopay',
+            'redirect' => $this->shouldRedirect(),
+            'redirectUrl' => $response->json['gw_url'],
+            'errors' => [],
+        ]);
     }
 
-    protected function errorResponse(\GoPay\Http\Response $response)
+    /**
+     * Return error response
+     *
+     * @param \GoPay\Http\Response $response
+     * @return void
+     */
+    protected function errorResponse(\GoPay\Http\Response $response): PaymentResponse
     {
-        if (isset($response->json['errors'])) {
-            return $this
-                ->newPaymentResponse($response->statusCode, PaymentStatus::ERROR)
-                ->setErrors($response->json['errors']);
-        }
-
-        return $this
-            ->newPaymentResponse($response->statusCode, PaymentStatus::ERROR)
-            ->setErrors([
-                'message' => (string) $response
-            ]);
+        return new PaymentResponse([
+            'statusCode' => $response->statusCode,
+            'status' => PaymentStatus::ERROR,
+            'orderNumber' => $response->json['order_number'] ?? '',
+            'amount' => $response->json['amount'] ?? '',
+            'currency' => $response->json['currency'] ?? '',
+            'payerInfo' => $response->json['payer'] ?? '',
+            'paymentMethod' => $response->json['payment_instrument'] ?? '',
+            'gateway' => 'gopay',
+            'redirectUrl' => $response->json['gw_url'] ?? '',
+            'redirect' => $this->shouldRedirect(),
+            'errors' => isset($response->json['errors'])
+                ? $response->json['errors']
+                : ['message' => (string) $response]
+        ]);
     }
 
-    protected function statusResponse(\GoPay\Http\Response $response)
+    /**
+     * Return status response
+     *
+     * @param \GoPay\Http\Response $response
+     * @return void
+     */
+    protected function statusResponse(\GoPay\Http\Response $response): PaymentResponse
     {
-        return $this
-            ->newPaymentResponse($response->statusCode, $response->json['state'])
-            ->setOrderNumber($response->json['order_number'])
-            ->setAmount($response->json['amount'])
-            ->setCurrency($response->json['currency'])
-            ->setPaymentMethod($response->json['payment_instrument'] ?? '')
-            ->setGateway('gopay')
-            ->setRedirectUrl($response->json['gw_url']);
-    }
-
-    protected function newPaymentResponse(int $statusCode, string $paymentStatus): PaymentResponse
-    {
-        return new PaymentResponse($statusCode, $paymentStatus);
+        return new PaymentResponse([
+            'statusCode' => $response->statusCode,
+            'status' => $response->json['state'],
+            'orderNumber' => $response->json['order_number'],
+            'amount' => $response->json['amount'],
+            'currency' => $response->json['currency'],
+            'payerInfo' => $response->json['payer'],
+            'paymentMethod' => $response->json['payment_instrument'] ?? '',
+            'gateway' => 'gopay',
+            'redirect' => $this->shouldRedirect(),
+            'redirectUrl' => $response->json['gw_url'],
+            'errors' => [],
+        ]);
     }
 
     protected function mapParams(Purchasable $model, array $params = [], array $options = []): array

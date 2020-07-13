@@ -66,7 +66,7 @@ class MadstoreGopay implements PaymentOption
      * @param \GoPay\Http\Response $response
      * @return void
      */
-    protected function successResponse(\GoPay\Http\Response $response)
+    protected function successResponse(\GoPay\Http\Response $response): PaymentResponse
     {
         return new PaymentResponse([
             'statusCode' => $response->statusCode,

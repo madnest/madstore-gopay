@@ -33,7 +33,6 @@ class MadstoreGopay implements PaymentOption
      */
     public function createPayment(Purchasable $purchasable, array $params = [], array $options = []): PaymentResponse
     {
-        // dd($this->mapParams($purchasable, $params, $options));
         $response = $this->gopay->createPayment($this->mapParams($purchasable, $params, $options));
 
         if ($response->hasSucceed()) {
@@ -46,10 +45,10 @@ class MadstoreGopay implements PaymentOption
     /**
      * Get payment status
      *
-     * @param int $id
+     * @param mixed $id
      * @return PaymentResponse
      */
-    public function getStatus(int $id): PaymentResponse
+    public function getStatus($id): PaymentResponse
     {
         $response = $this->gopay->getStatus($id);
 
@@ -131,6 +130,14 @@ class MadstoreGopay implements PaymentOption
         ]);
     }
 
+    /**
+     * Map payment parameters
+     *
+     * @param Purchasable $model
+     * @param array $params
+     * @param array $options
+     * @return array
+     */
     protected function mapParams(Purchasable $model, array $params = [], array $options = []): array
     {
         $params = [
